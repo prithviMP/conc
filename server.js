@@ -1,13 +1,30 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const sqlite3 = require('sqlite3').verbose();
+require('dotenv').config("./.env");
 const request = require('request');
 const axios = require('axios')
 const Razorpay = require('razorpay');
+const zohoRoutes = require('./routes/zohoRoutes');
+const razorpayRoutes = require('./routes/razorPayRoutes');
+const passport = require('./config/passportConfig');
 
+
+
+
+console.log("zoho client id ",process.env.ZOHO_CLIENT_ID);
 
 const app = express();
 app.use(bodyParser.json());
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+//app.use(session({ /* session config */ })); // If using sessions
+app.use(passport.initialize());
+//app.use(passport.session()); // If using sessions
+
+app.use('/zoho', zohoRoutes);
+app.use('/razorpay', razorpayRoutes);
 
 var instance = new Razorpay({
   key_id: 'rzp_test_0eGcmNDRrunO2e',
@@ -36,6 +53,7 @@ app.post('/razorpay-webhook', (req, res) => {
     const payment = req.body;
     const { id, name, email } = payment; // Extract relevant data based on Razorpay's payload structure
 
+    console.log("hello webhook");
     // Store in SQLite Database
     db.run(`INSERT INTO users (id, name, email) VALUES (?, ?, ?)`, [id, name, email], (err) => {
         if (err) return console.error(err.message);
