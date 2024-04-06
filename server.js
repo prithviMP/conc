@@ -7,7 +7,9 @@ const axios = require('axios')
 const Razorpay = require('razorpay');
 const zohoRoutes = require('./routes/zohoRoutes');
 const razorpayRoutes = require('./routes/razorPayRoutes');
+const fileRoutes = require('./routes/fileRoutes'); 
 const passport = require('./config/passportConfig');
+const path = require('path');
 
 
 
@@ -25,6 +27,8 @@ app.use(passport.initialize());
 
 app.use('/zoho', zohoRoutes);
 app.use('/razorpay', razorpayRoutes);
+app.use('/files', fileRoutes);
+
 
 var instance = new Razorpay({
   key_id: 'rzp_test_0eGcmNDRrunO2e',
@@ -33,6 +37,18 @@ var instance = new Razorpay({
 
 const db = new sqlite3.Database(':memory:');
 db.run("CREATE TABLE users (id TEXT PRIMARY KEY, name TEXT, email TEXT)");
+
+app.get('/.well-known/pki-validation/', (req, res) => {
+  const filePath = path.join(__dirname, 'ED55C88A82D243CE35CEB8A22E71E88E.txt'); // Adjust the path and file name as necessary
+  res.sendFile(filePath, err => {
+    if (err) {
+      // Handle error, but ensure header is not already sent
+      if (!res.headersSent) {
+        res.status(500).send('Error sending file');
+      }
+    }
+  });
+});
 
 app.post('/create-order', (req, res) => {
   let options = {
