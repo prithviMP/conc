@@ -109,7 +109,13 @@ async function getLeadStatus(email) {
       if (searchResponse.data.data.length > 0) {
           const lead = searchResponse.data.data[0];
           console.log(lead);
-          return lead.Lead_Status;
+          if (typeof lead.Lead_Status === "undefined") {
+            return false;
+        
+          }else if(lead.Lead_Status == "Paid"){
+            return true;
+          }
+          
       } else {
           console.log('No lead found with the given email');
       }
