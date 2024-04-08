@@ -10,6 +10,8 @@ const razorpayRoutes = require('./routes/razorPayRoutes');
 const fileRoutes = require('./routes/fileRoutes'); 
 const passport = require('./config/passportConfig');
 const path = require('path');
+const cors = require('cors');
+
 
 
 
@@ -17,6 +19,7 @@ const path = require('path');
 console.log("zoho client id ",process.env.ZOHO_CLIENT_ID);
 
 const app = express();
+app.use(cors());
 app.use(bodyParser.json());
 
 app.use(express.json());
