@@ -95,6 +95,7 @@ async function updateLeadStatus(email, newStatus) {
   try {
       const searchResponse = await axiosZoho.get(`Leads/search?email=${email}`);
 
+      console.log(searchResponse+"<---------------");
       if (searchResponse.data.data.length > 0) {
           const leadId = searchResponse.data.data[0].id;
 
