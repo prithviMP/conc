@@ -91,15 +91,44 @@ app.post('/create-order', (req, res) => {
     //res.status(200).send('Webhook received and processed');
 });
 
-async function updateLeadStatus(email, newStatus) {
+app.get('/get-lead', async (req, res) => {
+  const payment = req.body;
+  
+
+  //.log("hello email pf payer", payerEmail);
+  
+   return res.send({"status" : await getLeadStatus("prithvihhh@gmail.com")});
+ 
+});
+
+async function getLeadStatus(email) {
   try {
-      const searchResponse = await axiosZoho.get(`Leads/search?email=${email}`);
+      const searchResponse = await axiosZoho.get(`/crm/v6/Leads/search?email=${email}`);
 
       console.log(searchResponse+"<---------------");
       if (searchResponse.data.data.length > 0) {
-          const leadId = searchResponse.data.data[0].id;
+          const lead = searchResponse.data.data[0];
+          console.log(lead);
+          return lead.Lead_Status;
+      } else {
+          console.log('No lead found with the given email');
+      }
+  } catch (error) {
+      
+      console.error('Error updating lead status:',error);
+  }
+}
 
-          const updateResponse = await axiosZoho.put('Leads', {
+async function updateLeadStatus(email,newStatus) {
+  try {
+      const searchResponse = await axiosZoho.get(`/crm/v6/Leads/search?email=${email}`);
+
+      console.log(searchResponse+"<---------------");
+      if (searchResponse.data.data.length > 0) {
+        console.log();
+          const leadId = searchResponse.data.data[0].id;
+          console.log(leadId);
+          const updateResponse = await axiosZoho.put('/crm/v6/Leads', {
               data: [{ id: leadId, Lead_Status: newStatus }]
           });
 
@@ -108,10 +137,10 @@ async function updateLeadStatus(email, newStatus) {
           console.log('No lead found with the given email');
       }
   } catch (error) {
-      console.error('Error updating lead status:');
+      
+      console.error('Error updating lead status:',error);
   }
 }
-
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
