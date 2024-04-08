@@ -107,7 +107,7 @@ async function updateLeadStatus(email, newStatus) {
           console.log('No lead found with the given email');
       }
   } catch (error) {
-      console.error('Error updating lead status:', error);
+      console.error('Error updating lead status:');
   }
 }
 
