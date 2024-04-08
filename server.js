@@ -97,7 +97,7 @@ app.get('/get-lead', async (req, res) => {
 
   //.log("hello email pf payer", payerEmail);
   
-   return res.send({"status" : await getLeadStatus("prithvihhh@gmail.com")});
+   return res.send({"status" : await getLeadStatus("prithv44hhh@gmail.com")});
  
 });
 
@@ -106,7 +106,7 @@ async function getLeadStatus(email) {
       const searchResponse = await axiosZoho.get(`/crm/v6/Leads/search?email=${email}`);
 
       console.log(searchResponse+"<---------------");
-      if (searchResponse.data.data.length > 0) {
+      if (searchResponse.data && searchResponse.data.data.length > 0) {
           const lead = searchResponse.data.data[0];
           console.log(lead);
           if (typeof lead.Lead_Status === "undefined") {
@@ -118,6 +118,7 @@ async function getLeadStatus(email) {
           
       } else {
           console.log('No lead found with the given email');
+          return false;
       }
   } catch (error) {
       
