@@ -72,7 +72,7 @@ app.post('/create-order', (req, res) => {
  app.post('/razorpay-webhook', async (req, res) => {
     const payment = req.body;
     const { id, name, email } = payment; // Extract relevant data based on Razorpay's payload structure
-    const paymentInfo = orderData.payload.payment.entity;
+    const paymentInfo = payment.payload.payment.entity;
     const payerEmail = paymentInfo.email;
     const payerContact = paymentInfo.contact;
 
