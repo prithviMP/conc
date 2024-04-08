@@ -72,8 +72,11 @@ app.post('/create-order', (req, res) => {
  app.post('/razorpay-webhook', async (req, res) => {
     const payment = req.body;
     const { id, name, email } = payment; // Extract relevant data based on Razorpay's payload structure
+    const paymentInfo = orderData.payload.payment.entity;
+    const payerEmail = paymentInfo.email;
+    const payerContact = paymentInfo.contact;
 
-    console.log("hello webhook", payment);
+    console.log("hello email pf payer", payerEmail);
     // Store in SQLite Database
     // db.run(`INSERT INTO users (id, name, email) VALUES (?, ?, ?)`, [id, name, email], (err) => {
     //     if (err) return console.error(err.message);
@@ -81,23 +84,32 @@ app.post('/create-order', (req, res) => {
   
     // });
 
-    const leadData = req.body; // Extract lead data from the request
-    const data = {
-        "data": [leadData]
-      };
-      
+  
     console.log(data);
     // Insert code to save leadData in your database here
-
-    try {
-        const zohoResponse = await axiosZoho.post('/crm/v6/Leads', data);
-        res.json({ success: true, data: zohoResponse.data });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
-
-    res.status(200).send('Webhook received and processed');
+      updateLeadStatus(payerEmail, "Paid");
+    //res.status(200).send('Webhook received and processed');
 });
+
+async function updateLeadStatus(payerEmail, newStatus) {
+  try {
+      const searchResponse = await axiosZoho.get(`Leads/search?email=${email}`);
+
+      if (searchResponse.data.data.length > 0) {
+          const leadId = searchResponse.data.data[0].id;
+
+          const updateResponse = await axiosZoho.put('Leads', {
+              data: [{ id: leadId, Lead_Status: newStatus }]
+          });
+
+          console.log('Lead status updated:', updateResponse.data);
+      } else {
+          console.log('No lead found with the given email');
+      }
+  } catch (error) {
+      console.error('Error updating lead status:', error);
+  }
+}
 
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
