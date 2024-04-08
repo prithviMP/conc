@@ -91,7 +91,7 @@ app.post('/create-order', (req, res) => {
     //res.status(200).send('Webhook received and processed');
 });
 
-async function updateLeadStatus(payerEmail, newStatus) {
+async function updateLeadStatus(email, newStatus) {
   try {
       const searchResponse = await axiosZoho.get(`Leads/search?email=${email}`);
 
