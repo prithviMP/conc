@@ -85,7 +85,7 @@ app.post('/create-order', (req, res) => {
     // });
 
   
-    console.log(data);
+   // console.log(data);
     // Insert code to save leadData in your database here
       updateLeadStatus(payerEmail, "Paid");
     //res.status(200).send('Webhook received and processed');
