@@ -14,7 +14,7 @@ const razorpay = new Razorpay({
   
     try {
       const options = {
-        amount: 49900, // Razorpay expects the amount in the smallest currency unit (e.g., paise for INR)
+        amount: 100, // Razorpay expects the amount in the smallest currency unit (e.g., paise for INR)
         currency,
         receipt,
         notes,
