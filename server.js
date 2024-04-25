@@ -12,6 +12,16 @@ const passport = require('./config/passportConfig');
 const path = require('path');
 const cors = require('cors');
 const axiosZoho = require('./config/axiosZoho');
+const sequelize = require('./config/database'); // Adjust the path based on your structure
+const User = require('./models/userModel'); // Adjust the path based on your structure
+const userService = require('./services/userService'); // Make sure the path is correct
+
+sequelize.sync({ alter: true }).then(() => {
+  console.log('All models were synchronized successfully.');
+}).catch((error) => {
+  console.error('Failed to synchronize models:', error);
+});
+
 
 
 
@@ -39,8 +49,6 @@ var instance = new Razorpay({
   key_secret: '6rUZhBeNhV0bJ3S09cTbrs0N',
 });
 
-const db = new sqlite3.Database(':memory:');
-db.run("CREATE TABLE users (id TEXT PRIMARY KEY, name TEXT, email TEXT)");
 
 app.get('/.well-known/pki-validation/', (req, res) => {
   const filePath = path.join(__dirname, 'ED55C88A82D243CE35CEB8A22E71E88E.txt'); // Adjust the path and file name as necessary
@@ -69,27 +77,67 @@ app.post('/create-order', (req, res) => {
   });
 });
 
- app.post('/razorpay-webhook', async (req, res) => {
-    const payment = req.body;
-    const { id, name, email } = payment; // Extract relevant data based on Razorpay's payload structure
-    const paymentInfo = payment.payload.payment.entity;
-    const payerEmail = paymentInfo.email;
-    const payerContact = paymentInfo.contact;
 
-    console.log("hello email pf payer", payerEmail);
-    // Store in SQLite Database
-    // db.run(`INSERT INTO users (id, name, email) VALUES (?, ?, ?)`, [id, name, email], (err) => {
-    //     if (err) return console.error(err.message);
+app.post('/razorpay-webhook', async (req, res) => {
+  const payment = req.body;
+  const paymentInfo = payment.payload.payment.entity;
+  const payerEmail = paymentInfo.email;
+  const payerName = paymentInfo.name; // Make sure this is the correct path to the name in the payload
+  const payerContact = paymentInfo.contact;
+  const payerCity = paymentInfo.city;
+
+
+  try {
+    // Check if the payment event is successful and if so, update the user's status
+    if (payment.event === 'payment.success') { // Adjust the event type based on Razorpay's actual payload
+      // Find or create the user
+      let user = await userService.findOrCreateUser({
+        name: payerName,
+        email: payerEmail,
+        phone: payerContact,
+        city: payerCity, 
+      });
+
+      // Update the user's status to 'Paid' regardless if they were just created or already existed
+      updateLeadStatus(payerEmail, "Paid");
+      user = await userService.updateUserStatus(user.email, 'paid_customer');
+
+      res.status(200).send('Webhook received and processed');
+    } else {
+      // If the payment event is not successful, you may want to handle it differently
+      console.log(`Received payment event: ${payment.event}, but not handling it.`);
+      res.status(200).send(`Received payment event: ${payment.event}, but not handling it.`);
+    }
+  } catch (error) {
+    // Handle errors from userService or any other errors
+    console.error('Error processing Razorpay webhook:', error);
+    await userService.logAnomaly(error); // Make sure this method is defined to handle the logging
+    res.status(500).send('An error occurred while processing the webhook');
+  }
+});
+
+
+//  app.post('/razorpay-webhook', async (req, res) => {
+//     const payment = req.body;
+//     const { id, name, email } = payment; // Extract relevant data based on Razorpay's payload structure
+//     const paymentInfo = payment.payload.payment.entity;
+//     const payerEmail = paymentInfo.email;
+//     const payerContact = paymentInfo.contact;
+
+//     console.log("hello email pf payer", payerEmail);
+//     // Store in SQLite Database
+//     // db.run(`INSERT INTO users (id, name, email) VALUES (?, ?, ?)`, [id, name, email], (err) => {
+//     //     if (err) return console.error(err.message);
       
   
-    // });
+//     // });
 
   
-   // console.log(data);
-    // Insert code to save leadData in your database here
-      updateLeadStatus(payerEmail, "Paid");
-    //res.status(200).send('Webhook received and processed');
-});
+//    // console.log(data);
+//     // Insert code to save leadData in your database here
+//       updateLeadStatus(payerEmail, "Paid");
+//     //res.status(200).send('Webhook received and processed');
+// });
 
 app.get('/get-lead', async (req, res) => {
   const payment = req.body;
