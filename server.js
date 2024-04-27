@@ -15,6 +15,8 @@ const axiosZoho = require('./config/axiosZoho');
 const sequelize = require('./config/database'); // Adjust the path based on your structure
 const User = require('./models/userModel'); // Adjust the path based on your structure
 const userService = require('./services/userService'); // Make sure the path is correct
+const strapiService = require('./services/strapiService');
+
 
 sequelize.sync({ alter: true }).then(() => {
   console.log('All models were synchronized successfully.');
@@ -196,6 +198,113 @@ async function updateLeadStatus(email,newStatus) {
       console.error('Error updating lead status:',error);
   }
 }
+
+
+
+
+// Fetch all posts
+app.get('/posts', async (req, res) => {
+  try {
+      const posts = await strapiService.fetchAllPosts();
+      res.json(posts);
+  } catch (error) {
+    console.log(error);
+      res.status(500).send('Failed to fetch posts');
+  }
+});
+
+// Fetch a single post
+app.get('/posts/:id', async (req, res) => {
+  try {
+      const post = await strapiService.fetchPostById(req.params.id);
+      res.json(post);
+  } catch (error) {
+      res.status(500).send('Failed to fetch post');
+  }
+});
+
+// Fetch all announcements
+app.get('/announcements', async (req, res) => {
+  try {
+      const announcements = await strapiService.fetchAllAnnouncements();
+      res.json(announcements);
+  } catch (error) {
+      res.status(500).send('Failed to fetch announcements');
+  }
+});
+
+// Fetch a single announcement
+app.get('/announcements/:id', async (req, res) => {
+  try {
+      const announcement = await strapiService.fetchAnnouncementById(req.params.id);
+      res.json(announcement);
+  } catch (error) {
+      res.status(500).send('Failed to fetch announcement');
+  }
+});
+
+// Fetch all polls
+app.get('/polls', async (req, res) => {
+  try {
+      const polls = await strapiService.fetchAllPolls();
+      res.json(polls);
+  } catch (error) {
+      res.status(500).send('Failed to fetch polls');
+  }
+});
+
+// Fetch a single poll
+app.get('/polls/:id', async (req, res) => {
+  try {
+      const poll = await strapiService.fetchPollById(req.params.id);
+      res.json(poll);
+  } catch (error) {
+      res.status(500).send('Failed to fetch poll');
+  }
+});
+// Fetch all important links
+app.get('/important-links', async (req, res) => {
+  try {
+      const importantLinks = await strapiService.fetchAllImportantLinks();
+      res.json(importantLinks);
+  } catch (error) {
+      res.status(500).send('Failed to fetch important links');
+  }
+});
+
+// Fetch a single important link
+app.get('/important-links/:id', async (req, res) => {
+  try {
+      const importantLink = await strapiService.fetchImportantLinkById(req.params.id);
+      res.json(importantLink);
+  } catch (error) {
+      res.status(500).send('Failed to fetch important link');
+  }
+});
+
+// Fetch all categories
+app.get('/categories', async (req, res) => {
+  try {
+      const categories = await strapiService.fetchAllCategories();
+      res.json(categories);
+  } catch (error) {
+      res.status(500).send('Failed to fetch categories');
+  }
+});
+
+// Fetch a single category
+app.get('/categories/:id', async (req, res) => {
+  try {
+      const category = await strapiService.fetchItemById('categories', req.params.id); // Assuming `fetchItemById` is flexible for any type
+      res.json(category);
+  } catch (error) {
+      res.status(500).send('Failed to fetch category');
+  }
+});
+
+
+
+
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
