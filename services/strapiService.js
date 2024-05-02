@@ -5,7 +5,7 @@ const STRAPI_API_KEY = process.env.STRAPI_API_KEY;
 
 const fetchItems = async (type) => {
     try {
-        const response = await axios.get(`${STRAPI_BASE_URL}/${type}`, {
+        const response = await axios.get(`${STRAPI_BASE_URL}/${type}?populate=*`, {
             headers: { Authorization: `Bearer ${STRAPI_API_KEY}` }
         });
         return response.data;
@@ -17,7 +17,7 @@ const fetchItems = async (type) => {
 
 const fetchItemById = async (type, id) => {
     try {
-        const response = await axios.get(`${STRAPI_BASE_URL}/${type}/${id}`, {
+        const response = await axios.get(`${STRAPI_BASE_URL}/${type}/${id}?populate=*`, {
             headers: { Authorization: `Bearer ${STRAPI_API_KEY}` }
         });
         return response.data;

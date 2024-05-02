@@ -12,17 +12,14 @@ const passport = require('./config/passportConfig');
 const path = require('path');
 const cors = require('cors');
 const axiosZoho = require('./config/axiosZoho');
-const sequelize = require('./config/database'); // Adjust the path based on your structure
+const db = require('./config/database'); // Adjust the path based on your structure
 const User = require('./models/userModel'); // Adjust the path based on your structure
 const userService = require('./services/userService'); // Make sure the path is correct
 const strapiService = require('./services/strapiService');
+const commentsRoutes = require('./routes/commentsRoutes');
+const  likeRoutes  = require('./routes/likeRoutes');
 
 
-sequelize.sync({ alter: true }).then(() => {
-  console.log('All models were synchronized successfully.');
-}).catch((error) => {
-  console.error('Failed to synchronize models:', error);
-});
 
 
 
@@ -34,6 +31,7 @@ console.log("zoho client id ",process.env.ZOHO_CLIENT_ID);
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
+const routeList = require("express-routes-catalogue").default;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -44,6 +42,12 @@ app.use(passport.initialize());
 app.use('/zoho', zohoRoutes);
 app.use('/razorpay', razorpayRoutes);
 app.use('/files', fileRoutes);
+app.use(commentsRoutes)
+app.use(likeRoutes)
+
+
+console.log(routeList);
+routeList.terminal(app);
 
 
 var instance = new Razorpay({
@@ -306,6 +310,11 @@ app.get('/categories/:id', async (req, res) => {
 
 
 const PORT = process.env.PORT || 8000;
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
+
+
+db.sequelize.sync({ force: false }) // Use { force: true } only if you want to drop and re-create tables
+  .then(() => {
+    console.log('Database synced');
+    app.listen(PORT, () => console.log('Server running on http://localhost:'+PORT));
+  })
+  .catch(err => console.error('Failed to sync database:', err));
