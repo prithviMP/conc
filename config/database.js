@@ -1,28 +1,34 @@
-const { Sequelize } = require('sequelize');
+const { Sequelize, DataTypes } = require('sequelize');
 
-// Setup the Sequelize instance
-const sequelize =  new Sequelize({
+// Create a Sequelize instance
+const sequelize = new Sequelize({
   dialect: 'sqlite',
-  storage: './database.sqlite', // Update the path as needed
-  logging: false // You can set it to console.log for debugging purposes
+  storage: './database.sqlite',
+  logging: false  // Set true to enable logging SQL queries
 });
 
 const db = {
-  sequelize, // This represents your sequelize instance
-  Sequelize // This exports the Sequelize library itself
+  sequelize,
+  Sequelize
 };
 
+// Function to setup models and associations
+async function setupModels() {
+  // Import and initialize models
+  db.User = require('../models/userModel')(sequelize, DataTypes);
+  db.Post = require('../models/postModel')(sequelize, DataTypes);
+  db.Comment = require('../models/commentModel')(sequelize, DataTypes);
 
-// Import models
-db.User = require('../models/userModel')(sequelize, Sequelize);
-db.Post = require('../models/postModel')(sequelize, Sequelize);
-db.Comment = require('../models/commentModel')(sequelize, Sequelize);
+  // Setup associations
+  db.User.hasMany(db.Comment, { foreignKey: 'userId' });
+  db.Post.hasMany(db.Comment, { foreignKey: 'postId' });
+  db.Comment.belongsTo(db.User, { foreignKey: 'userId' });
+  db.Comment.belongsTo(db.Post, { foreignKey: 'postId' });
 
-// Setup associations
-db.User.hasMany(db.Comment, { foreignKey: 'userId' });
-db.Post.hasMany(db.Comment, { foreignKey: 'postId' });
-db.Comment.belongsTo(db.User, { foreignKey: 'userId' });
-db.Comment.belongsTo(db.Post, { foreignKey: 'postId' });
+  // Synchronize all models with the database
+  await db.sequelize.sync({ force: true });  // Use { force: true } cautiously as it will drop existing tables
+  console.log('Models are synchronized and ready to use.');
+}
 
-console.log(db);
-module.exports = db;
+// Export db and setup function
+module.exports = { db, setupModels };
