@@ -18,7 +18,7 @@ const userService = require('./services/userService'); // Make sure the path is 
 const strapiService = require('./services/strapiService');
 const commentsRoutes = require('./routes/commentsRoutes');
 const  likeRoutes  = require('./routes/likeRoutes');
-
+const {  setupModels } = require('./config/database');
 
 
 
@@ -312,9 +312,11 @@ app.get('/categories/:id', async (req, res) => {
 const PORT = process.env.PORT || 8000;
 
 
-db.sequelize.sync({ force: false }) // Use { force: true } only if you want to drop and re-create tables
-  .then(() => {
-    console.log('Database synced');
-    app.listen(PORT, () => console.log('Server running on http://localhost:'+PORT));
-  })
-  .catch(err => console.error('Failed to sync database:', err));
+setupModels().then(() => {
+  const PORT = process.env.PORT || 8000;
+  app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+  });
+}).catch(err => {
+  console.error('Error during model setup:', err);
+});
